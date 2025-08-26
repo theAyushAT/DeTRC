@@ -129,7 +129,7 @@ def load_proposal_file(filename):
 def load_video_length_dict(dataset_type):
     if dataset_type == "Repcount":
         length_file = "./datasets/Repcount.json"
-    elif length_file == "UCFRep":
+    elif dataset_type == "UCFRep":
         length_file = "./datasets/UCFRep.json"
     else:
         raise Exception("not implement for this dataset type, please check.")
