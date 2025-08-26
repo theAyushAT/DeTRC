@@ -7,7 +7,7 @@ import torch
 from scipy.optimize import linear_sum_assignment
 from torch import nn
 
-from DetRC.utill.temporal_box_producess import segment_iou, ml2se
+from DeTRC.utill.temporal_box_producess import segment_iou, ml2se
 
 
 class HungarianMatcher(nn.Module):

@@ -5,7 +5,7 @@ import torch
 from torch.utils.cpp_extension import load
 
 # build by python setup.py install
-import DetRC.model.grid_sample1d.grid_sample1d_cuda as grid_sample1d
+import DeTRC.model.grid_sample1d.grid_sample1d_cuda as grid_sample1d
 
 # jit
 # grid_sample1d = load(

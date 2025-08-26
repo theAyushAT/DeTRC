@@ -9,9 +9,9 @@ import torch.nn.functional as F
 from torch import Tensor
 from torch.nn.init import constant_, xavier_uniform_
 
-from DetRC.model.grid_sample1d import GridSample1d
-from DetRC.utill.misc import inverse_sigmoid
-from DetRC.utill.temporal_box_producess import ml2se, segment_iou, get_reference_points
+from DeTRC.model.grid_sample1d import GridSample1d
+from DeTRC.utill.misc import inverse_sigmoid
+from DeTRC.utill.temporal_box_producess import ml2se, segment_iou, get_reference_points
 
 
 class MLP(nn.Module):

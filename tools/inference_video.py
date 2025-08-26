@@ -1,6 +1,23 @@
+import os
+import sys
+from shutil import which
+
+# Add current directory to Python path for DeTRC imports
+sys.path.append('.')
+
+# Compatibility shim: MMAction2 0.5.0 expects mmcv.utils.CUDA_HOME
+# Must be done BEFORE importing mmcv or mmaction
+import mmcv
+if not hasattr(mmcv.utils, 'CUDA_HOME'):
+    cuda_home = os.environ.get('CUDA_HOME')
+    if not cuda_home:
+        nvcc = which('nvcc')
+        if nvcc:
+            cuda_home = os.path.dirname(os.path.dirname(nvcc))
+    setattr(mmcv.utils, 'CUDA_HOME', cuda_home)
+
 import argparse
 import math
-import os
 from typing import List
 
 import numpy as np
@@ -11,6 +28,9 @@ from mmaction.models import build_model
 from torchvision import transforms
 from torchvision.models import resnet50
 from PIL import Image
+
+# Ensure DeTRC model registers with MMAction2 registries before build_model
+import DeTRC.model.DetTRC  # noqa: F401
 
 
 def extract_features(video_path: str, clip_len: int, stride_rate: float, device: str):
@@ -76,7 +96,9 @@ def main():
 
     device = args.device
     cfg = Config.fromfile(args.config)
-    cfg.model.pretrained = None
+    # Remove pretrained parameter if it exists, as DeTRC doesn't support it
+    if hasattr(cfg.model, 'pretrained'):
+        delattr(cfg.model, 'pretrained')
     model = build_model(cfg.model, train_cfg=None, test_cfg=cfg.get("test_cfg"))
     load_checkpoint(model, args.checkpoint, map_location="cpu")
     model.to(device)
@@ -89,16 +111,23 @@ def main():
         args.video, clip_len, stride_rate, device
     )
 
-    # Prepare inputs for model
-    raw_feature = [clip_feats]
-    snippet_num = [snippet_nums]
-    gt_bbox = [[np.zeros((0, 3), dtype=np.float32) for _ in clip_feats]]
-    video_gt_box = [np.zeros((0, 3), dtype=np.float32)]
+    # Prepare inputs for model - DeTRC expects specific format
+    raw_feature = clip_feats  # List of tensors, not wrapped in another list
+    snippet_num = snippet_nums  # List of integers, not wrapped in another list
+    gt_bbox = [np.zeros((0, 3), dtype=np.float32) for _ in clip_feats]  # List of empty arrays
+    video_gt_box = [np.zeros((0, 3), dtype=np.float32)]  # Single empty array
     video_meta = [
         {"video_name": os.path.basename(args.video), "origin_snippet_num": total_snippets}
     ]
 
     with torch.no_grad():
+        print(f"Debug - raw_feature structure: {type(raw_feature)}")
+        print(f"Debug - raw_feature[0] type: {type(raw_feature[0])}")
+        if hasattr(raw_feature[0], 'shape'):
+            print(f"Debug - raw_feature[0] shape: {raw_feature[0].shape}")
+        print(f"Debug - snippet_num: {snippet_num}")
+        print(f"Debug - video_meta: {video_meta}")
+        
         outputs = model.forward(
             raw_feature=raw_feature,
             gt_bbox=gt_bbox,

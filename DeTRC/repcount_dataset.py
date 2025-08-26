@@ -14,8 +14,8 @@ from math import ceil
 from numpy.random import randint
 import mmcv
 
-from DetRC.utill.temporal_box_producess import softnms_v2, segment_iou
-from DetRC.model.grid_sample1d import GridSample1d
+from DeTRC.utill.temporal_box_producess import softnms_v2, segment_iou
+from DeTRC.model.grid_sample1d import GridSample1d
 from mmaction.datasets.builder import DATASETS
 from mmaction.datasets.pipelines import Compose
 from tools.misc.evaluation import eval_map
