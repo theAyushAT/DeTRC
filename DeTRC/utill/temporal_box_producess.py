@@ -18,7 +18,7 @@ def mid_dis2start_end(x):
 def start_end2mid_dis(x):
     # x shape (num_seg, 2)
     s, e = x[:, 0], x[:, 1]
-    b = [((s + e) / 2).astype(np.int), (e - s).astype(np.int)]
+    b = [((s + e) / 2).astype(np.int64), (e - s).astype(np.int64)]
     return np.stack(b)
 
 
