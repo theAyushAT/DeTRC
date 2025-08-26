@@ -13,7 +13,7 @@ def readme():
     return content
 
 
-version_file = 'mmaction/version.py'
+version_file = 'DeTRC/version.py'
 
 
 def get_version():
