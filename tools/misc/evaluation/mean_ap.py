@@ -179,8 +179,8 @@ def tpfp_default(det_segments,
     """
     # an indicator of ignored gts
     gt_ignore_inds = np.concatenate(
-        (np.zeros(gt_segments.shape[0], dtype=np.bool),
-         np.ones(gt_segments_ignore.shape[0], dtype=np.bool)))
+        (np.zeros(gt_segments.shape[0], dtype=np.bool_),
+         np.ones(gt_segments_ignore.shape[0], dtype=np.bool_)))
     # stack gt_segments and gt_segments_ignore for convenience
     gt_segments = np.vstack((gt_segments, gt_segments_ignore))
 
