@@ -1,0 +1,31 @@
+name: detrc
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pytorch=2.5.1
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=12.1
+  - cudatoolkit=12.1
+  - cudnn=8.9.2.26
+  - numpy
+  - opencv
+  - pillow
+  - matplotlib
+  - scipy
+  - scikit-learn
+  - pandas
+  - h5py
+  - terminaltables
+  - mmcv=1.7.0
+  - mmaction2=0.24.1
+  - pip
+  - pip:
+    - opencv-python
+    - opencv-contrib-python
+    - mmcv-full==1.7.2
+    - mmaction2==0.24.1
