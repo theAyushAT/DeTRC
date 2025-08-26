@@ -344,7 +344,7 @@ def nested_tensor_from_tensor_list(tensor_list, clip_len=None, snippet_num=None)
         dtype = tensor_list[0][0].dtype
         tensor = torch.zeros(batch_shape, dtype=dtype)
         mask = torch.ones((bz, max_clip_num, clip_len), dtype=torch.bool)
-        clip_mask = np.ones((bz, max_clip_num), dtype=np.bool)
+        clip_mask = np.ones((bz, max_clip_num), dtype=np.bool_)
         snippets_pad = torch.ones((bz, max_clip_num)) * -1
 
         for feat, pad_feat, m, clip_m, snip, snip_pad in zip(
@@ -381,7 +381,7 @@ def nested_tensor_from_tensor_list(tensor_list, clip_len=None, snippet_num=None)
         dtype = tensor_list[0].dtype
         tensor = torch.zeros(batch_shape, dtype=dtype)
         mask = torch.ones((bz, max_clip_num, clip_len), dtype=torch.bool)
-        clip_mask = np.ones((bz, max_clip_num), dtype=np.bool)
+        clip_mask = np.ones((bz, max_clip_num), dtype=np.bool_)
         snippets_pad = torch.ones((bz, max_clip_num)) * -1
 
         for feat, pad_feat, m, clip_m, snip, snip_pad in zip(
@@ -567,23 +567,6 @@ def interpolate(
         )
 
 
-@torch.no_grad()
-def accuracy(output, target, topk=(1,)):
-    """Computes the precision@k for the specified values of k"""
-    if target.numel() == 0:
-        return [torch.zeros([], device=output.device)]
-    maxk = max(topk)
-    batch_size = target.size(0)
-
-    _, pred = output.topk(maxk, 1, True, True)
-    pred = pred.t()
-    correct = pred.eq(target.view(1, -1).expand_as(pred))
-
-    res = []
-    for k in topk:
-        correct_k = correct[:k].view(-1).float().sum(0)
-        res.append(correct_k.mul_(100.0 / batch_size))
-    return res
 
 
 def inverse_sigmoid(x, eps=1e-5):

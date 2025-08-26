@@ -18,15 +18,11 @@ This is the official PyTorch implementation of the paper "Efficient Action Count
 
 
 ## Installation
-We build our code based on the MMaction2 project (1.3.10 version). See [here](https://github.com/open-mmlab/mmaction2) for more details if you are interested.
-MMCV is needed before install MMaction2, which can be install with:
+We build our code based on the MMaction2 project (1.3.10 version). See [here](https://github.com/open-mmlab/mmaction2) for more details if you are interested. Install the runtime dependencies with:
 ```shell
-pip install mmcv-full-f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html
-# For example, to install the latest mmcv-full with CUDA 11.1 and PyTorch 1.9.0, use the following command:
-pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html
+pip install -r requirements.txt
 ```
-For other CUDA or pytorch version, please refer to [mmcv](https://github.com/open-mmlab/mmcv).
-
+If you need a specific CUDA or PyTorch build for `mmcv-full`, please refer to the [mmcv](https://github.com/open-mmlab/mmcv) documentation.
 
 Then, our code can be built by
 ```shell

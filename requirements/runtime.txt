@@ -5,3 +5,8 @@ numpy
 opencv-contrib-python
 Pillow
 scipy
+pandas
+scikit-learn
+torch>=1.3
+torchvision
+mmcv-full>=1.3.1
