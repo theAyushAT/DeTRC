@@ -107,7 +107,7 @@ def load_proposal_file(filename):
             # cls = fix_and_get_label(rows["type"])
             # if cls == -1:
             #     return
-            count = int(rows["count"]) if pd.notna("count") else 0
+            count = int(rows["count"]) if pd.notna(rows["count"]) else 0
             if "total_frames" in rows:
                 n_frames = int(rows["total_frames"])
             else:
