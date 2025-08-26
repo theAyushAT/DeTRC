@@ -308,14 +308,12 @@ class NestedTensor(object):
     def __init__(
         self, tensors, mask: Optional[Tensor], clip_mask=None, snippet_num=None
     ):
-        print(f"Debug NestedTensor - __init__ called with snippet_num: {snippet_num}")
         self.tensors = tensors
         self.mask = mask
 
         # if the input is a batch of video clips, we will used these value
         self.clip_mask = clip_mask
         self.snippet_num = snippet_num
-        print(f"Debug NestedTensor - self.snippet_num set to: {self.snippet_num}")
 
     def to(self, device):
         # type: (Device) -> NestedTensor # noqa
@@ -327,7 +325,7 @@ class NestedTensor(object):
             cast_mask = mask.to(device)
         else:
             cast_mask = None
-        return NestedTensor(cast_tensor, cast_mask, clip_mask)
+        return NestedTensor(cast_tensor, cast_mask, clip_mask, self.snippet_num)
 
     def decompose(self):
         return self.tensors, self.mask
@@ -338,6 +336,7 @@ class NestedTensor(object):
 
 def nested_tensor_from_tensor_list(tensor_list, clip_len=None, snippet_num=None):
     # TODO make this more general
+    
     if isinstance(tensor_list[0], list):
         dim = tensor_list[0][0].shape[1]
         bz = len(tensor_list)
@@ -361,64 +360,23 @@ def nested_tensor_from_tensor_list(tensor_list, clip_len=None, snippet_num=None)
         return NestedTensor(tensor, mask, clip_mask, snippets_pad)
 
     elif tensor_list[0].ndim == 2:
-        # Handle single video case - tensor_list contains feature tensors for each video
         max_num_size = max([feat.shape[0] for feat in tensor_list])
         min_dim_size = min([feat.shape[1] for feat in tensor_list])
+        # Create 4D tensor: [batch_size, num_clips=1, clip_len, feat_dim]
+        batch_shape = [len(tensor_list), 1, clip_len, min_dim_size]
+        bz, num_clips, num, dim = batch_shape
+        dtype = tensor_list[0].dtype
+        device = tensor_list[0].device
+        tensor = torch.zeros(batch_shape, dtype=dtype, device=device)
+        mask = torch.ones((bz, num_clips, num), dtype=torch.bool, device=device)
+        for feat, pad_feat, m in zip(tensor_list, tensor, mask):
+            pad_feat[0, : feat.shape[0], : feat.shape[1]].copy_(feat)
+            m[0, : feat.shape[0]] = False
         
-        print(f"Debug 2D - max_num_size: {max_num_size}, min_dim_size: {min_dim_size}, clip_len: {clip_len}")
-        
-        # For single video inference, we need to handle the case where clip_len > max_num_size
-        if clip_len is not None and clip_len > max_num_size:
-            print("Debug 2D - Using clip_len > max_num_size branch")
-            # Pad the features to match clip_len
-            batch_shape = [len(tensor_list), clip_len, min_dim_size]
-            bz, num, dim = batch_shape
-            dtype = tensor_list[0].dtype
-            device = tensor_list[0].device
-            tensor = torch.zeros(batch_shape, dtype=dtype, device=device)
-            mask = torch.ones((bz, num), dtype=torch.bool, device=device)
-            
-            for feat, pad_feat, m in zip(tensor_list, tensor, mask):
-                # Copy the actual features
-                actual_frames = min(feat.shape[0], clip_len)
-                pad_feat[:actual_frames, :feat.shape[1]].copy_(feat[:actual_frames, :])
-                # Mark valid frames (not padded)
-                m[:actual_frames] = False
-                
-            print(f"Debug 2D - Created tensor with shape: {tensor.shape}")
-            try:
-                # Create NestedTensor with snippet_num parameter (clip_mask is None for 2D case)
-                result = NestedTensor(tensor, mask, None, snippet_num)
-                print(f"Debug 2D - NestedTensor created: {result}")
-                print(f"Debug 2D - About to return result")
-                return result
-            except Exception as e:
-                print(f"Debug 2D - Error creating NestedTensor: {e}")
-                raise
-        else:
-            print("Debug 2D - Using clip_len <= max_num_size branch")
-            # Use the original logic for cases where clip_len <= max_num_size
-            batch_shape = [len(tensor_list), max_num_size, min_dim_size]
-            bz, num, dim = batch_shape
-            dtype = tensor_list[0].dtype
-            device = tensor_list[0].device
-            tensor = torch.zeros(batch_shape, dtype=dtype, device=device)
-            mask = torch.ones((bz, num), dtype=torch.bool, device=device)
-            
-            for feat, pad_feat, m in zip(tensor_list, tensor, mask):
-                pad_feat[:feat.shape[0], :feat.shape[1]].copy_(feat)
-                m[:feat.shape[0]] = False
-                
-            print(f"Debug 2D - Created tensor with shape: {tensor.shape}")
-            try:
-                # Create NestedTensor with snippet_num parameter (clip_mask is None for 2D case)
-                result = NestedTensor(tensor, mask, None, snippet_num)
-                print(f"Debug 2D - NestedTensor created: {result}")
-                print(f"Debug 2D - About to return result")
-                return result
-            except Exception as e:
-                print(f"Debug 2D - Error creating NestedTensor: {e}")
-                raise
+        # Create clip_mask and snippet_num for 2D case
+        clip_mask = np.zeros((bz, num_clips), dtype=np.bool_)  # Single clip
+        snippet_num_tensor = torch.tensor([[max_num_size]], device=device)  # Single clip with max size
+        return NestedTensor(tensor, mask, clip_mask, snippet_num_tensor)
 
     elif tensor_list[0].ndim == 3:
         # tensor_list shape N * T * C

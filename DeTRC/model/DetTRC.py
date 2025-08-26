@@ -249,15 +249,7 @@ class DeTRC(BaseTAPGenerator):
                 raw_feature, self.clip_len, snippet_num
             )
         else:
-            print(f"Debug - About to call nested_tensor_from_tensor_list with clip_len: {self.clip_len}")
-            # Get snippet_num from the input data
-            snippet_num = torch.tensor([feat.shape[0] for feat in raw_feature], dtype=torch.long, device=raw_feature[0].device)
-            print(f"Debug - snippet_num calculated: {snippet_num}")
-            raw_feature = nested_tensor_from_tensor_list(raw_feature, self.clip_len, snippet_num)
-            print(f"Debug - nested_tensor_from_tensor_list returned: {raw_feature}")
-            print(f"Debug - raw_feature type: {type(raw_feature)}")
-            if raw_feature is not None:
-                print(f"Debug - raw_feature attributes: {dir(raw_feature)}")
+            raw_feature = nested_tensor_from_tensor_list(raw_feature, self.clip_len)
 
         masks = raw_feature.mask.cuda()
         input_feature = raw_feature.tensors.cuda()
@@ -296,7 +288,7 @@ class DeTRC(BaseTAPGenerator):
                 )
             elif self.use_position_embedding == "learnable":
                 pos_embeds = self.pos_embed.weight.unsqueeze(0).repeat(
-                    input_feature.shape[0], -1, -1
+                    input_feature.shape[0], 1, 1
                 )
             else:
                 pos_embeds = None
